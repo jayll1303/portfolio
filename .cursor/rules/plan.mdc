@@ -1,0 +1,99 @@
+---
+alwaysApply: true
+---
+
+-----
+
+Để triển khai phương pháp này, bạn cần hai repository và thiết lập GitHub Actions.
+
+### A. Thiết lập Repositories
+
+1.  **Repository Source (Private):**
+
+      * **Tên:** Ví dụ: `jekyll-blog-source` (Đặt private).
+      * **Nội dung:** Chứa toàn bộ dự án Jekyll của bạn (bao gồm `_posts`, `_config.yml`, `Gemfile`, v.v.).
+
+2.  **Repository Deployment (Public):**
+
+      * **Tên:** Bắt buộc phải là `<username>.github.io` (Đặt public).
+      * **Nội dung:** Repo này sẽ chỉ chứa **kết quả đã build** của Jekyll (thư mục `_site` sau khi build) được đẩy từ GitHub Action.
+
+### B. Cấu hình GitHub Actions (CI/CD)
+
+Bạn cần tạo một workflow trong repo **Source (Private)** để tự động build và push kết quả sang repo **Deployment (Public)**.
+
+1.  **Tạo Personal Access Token (PAT):**
+
+      * Vào **Settings** $\rightarrow$ **Developer settings** $\rightarrow$ **Personal access tokens** trên GitHub.
+      * Tạo một **Classic token** mới.
+      * Đặt tên dễ nhớ (ví dụ: `GH_PAGES_DEPLOY`).
+      * Chọn quyền (scope) **`repo`** (để có thể push code).
+      * **Lưu PAT này lại ngay lập tức.**
+
+2.  **Thêm Secret vào Repo Source:**
+
+      * Trong repo **Source (Private)**, vào **Settings** $\rightarrow$ **Secrets and variables** $\rightarrow$ **Actions** $\rightarrow$ **New repository secret**.
+      * **Name:** `DEPLOY_TOKEN`
+      * **Secret:** Dán PAT vừa tạo.
+
+3.  **Tạo Workflow (`.github/workflows/deploy.yml`):**
+
+      * Tạo một file YML trong thư mục `.github/workflows` của repo **Source (Private)**.
+
+<!-- end list -->
+
+```yaml
+# .github/workflows/deploy.yml
+name: Jekyll Build and Deploy
+
+on:
+  push:
+    branches:
+      - main # Kích hoạt khi có commit mới vào nhánh main
+
+jobs:
+  jekyll-build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout mã nguồn
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Thiết lập Ruby (cần cho Jekyll)
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.x' # Dùng phiên bản Ruby tương thích với Jekyll
+          bundler-cache: true 
+
+      # 3. Cài đặt các gem dependencies
+      - name: Install dependencies
+        run: bundle install
+
+      # 4. Build Jekyll (tạo các file tĩnh)
+      - name: Jekyll build
+        run: bundle exec jekyll build
+        env:
+          JEKYLL_ENV: production # Đảm bảo build cho môi trường production
+
+      # 5. Deploy kết quả build (thư mục _site) sang Repo công khai
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.DEPLOY_TOKEN }} # Dùng Secret đã tạo
+          publish_dir: ./_site # Thư mục chứa kết quả build của Jekyll
+          external_repository: <username>/<username>.github.io # Repo đích
+          publish_branch: main # Hoặc master (nhánh deploy của repo public)
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+```
+
+### C. Quy trình làm việc
+
+1.  Bạn viết bài mới/chỉnh sửa trong repo **Source (Private)**.
+2.  Commit và push lên nhánh `main` (hoặc merge PR vào `main`).
+3.  GitHub Action sẽ tự động:
+      * Tải code.
+      * Chạy `jekyll build`.
+      * Đẩy nội dung thư mục `_site` (các file HTML tĩnh) sang repo **Deployment (Public)**: `<username>.github.io`.
+4.  GitHub Pages sẽ nhận nội dung mới từ repo public và cập nhật trang web của bạn.

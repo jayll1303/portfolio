@@ -1,0 +1,8 @@
+[submodule "jayll1303.github.io"]
+	path = jayll1303.github.io
+	url = https://github.com/jayll1303/jayll1303.github.io.git
+	branch = main
+[submodule "porfolio-content"]
+	path = porfolio-content
+	url = https://github.com/jayll1303/porfolio-content.git
+	branch = main

@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+Trang porfolio dạng blogspot. Cấu hình 2 github repositories: 
+
+1. jayll1303.github.io (Public): https://github.com/jayll1303/jayll1303.github.io
+2. porfolio-content (Private): https://github.com/jayll1303/porfolio-content
+
+Sử dụng một repository private để quản lý nguồn bài viết (Source) và dùng CI/CD (GitHub Actions) để đồng bộ sang repository public (Deployment) cho GitHub Pages
