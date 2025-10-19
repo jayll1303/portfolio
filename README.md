@@ -79,3 +79,17 @@ git submodule foreach git pull --rebase
 
 - Public site: https://jayll1303.github.io
 - Hacker theme docs: https://github.com/pages-themes/hacker/blob/master/README.md
+
+## Tools
+
+- Push helper: `tools/push.sh`
+
+Usage:
+
+```bash
+tools/push.sh -m "feat(content): add new post"
+```
+
+What it does:
+- Pull latest for `jayll1303.github.io` (main)
+- Add/commit/push in `porfolio-content` (main) with provided message
