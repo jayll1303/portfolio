@@ -75,6 +75,18 @@ popd >/dev/null
 # Step 2: Commit and push changes in porfolio-content
 log "Step 2/2: Staging, committing, and pushing in ${CONTENT_DIR}"
 pushd "${CONTENT_DIR}" >/dev/null
+# Ensure we're on main (avoid detached HEAD)
+git fetch origin --prune
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+  if git show-ref --verify --quiet refs/heads/main; then
+    git checkout main
+    git pull --rebase origin main
+  else
+    git checkout -B main origin/main || git checkout -B main
+    git branch --set-upstream-to=origin/main main 2>/dev/null || true
+  fi
+fi
+
 git add -A
 
 if git diff --cached --quiet; then
